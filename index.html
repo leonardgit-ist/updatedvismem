@@ -31,16 +31,14 @@
       background: #333;
       border-radius: 4px;
     }
-    .cell.highlight { background: #0f0; }
+    .cell.highlight {
+      background: #0f0;
+    }
     .cell.selected { background: #55f; }
     .cell.wrong { background: #f00; }
     .cell.missed {
-      background: yellow;
-      animation: flicker 600ms ease-in-out infinite;
-    }
-    @keyframes flicker {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+      background: #ff0;
+      animation: flicker 0.3s linear infinite;
     }
     input, button {
       background: #222;
@@ -48,6 +46,10 @@
       color: white;
       padding: 5px 10px;
       margin: 5px;
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
   </style>
 </head>
@@ -58,12 +60,8 @@
       Level: <span id="levelDisplay">1</span> |
       Lives: <span id="livesDisplay">3</span>
     </p>
-    <label>Start Level: <input type="number" id="levelInput" min="1" value="1" /></label>
-    <label>Max Grid Size: <input type="number" id="gridCapInput" min="3" value="10" /></label>
-    <label>
-      <input type="checkbox" id="flickerToggle" checked />
-      Flicker Missed Squares
-    </label>
+    <label>Start Level: <input type="number" id="levelInput" min="1" value="1"></label>
+    <label>Max Grid Size: <input type="number" id="gridCapInput" min="3" value="10"></label>
     <button onclick="startGame()">Start</button>
   </div>
   <div id="grid"></div>
@@ -74,7 +72,6 @@
     const livesDisplay = document.getElementById("livesDisplay");
     const levelInput = document.getElementById("levelInput");
     const gridCapInput = document.getElementById("gridCapInput");
-    const flickerToggle = document.getElementById("flickerToggle");
 
     let level = 1;
     let lives = 3;
@@ -142,6 +139,19 @@
       }, 1300);
     }
 
+    function highlightMissed() {
+      selected.forEach(i => {
+        if (!highlighted.has(i)) {
+          cells[i].classList.add("wrong");
+        }
+      });
+      highlighted.forEach(i => {
+        if (!selected.has(i)) {
+          cells[i].classList.add("missed");
+        }
+      });
+    }
+
     function onCellClick(e) {
       if (!clickable) return;
       const i = +e.target.dataset.index;
@@ -157,18 +167,13 @@
           lives--;
           livesDisplay.textContent = lives;
           clickable = false;
+          highlightMissed();
           if (lives <= 0) {
             setTimeout(() => {
               alert("Game over. Final level: " + level);
               startGame();
-            }, 300);
+            }, 1500);
             return;
-          }
-          const missedSquares = [...highlighted].filter(i => !selected.has(i));
-          if (flickerToggle.checked) {
-            missedSquares.forEach(i => cells[i].classList.add("missed"));
-          } else {
-            missedSquares.forEach(i => cells[i].classList.add("selected"));
           }
           setTimeout(() => generateGrid(), 1500);
           return;
